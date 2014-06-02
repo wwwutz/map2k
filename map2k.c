@@ -627,32 +627,6 @@ uint64_t rot90(uint64_t f)
     return r;
 }
 
-
-uint64_t flipDiagA1H8(uint64_t x)
-{
-    uint64_t t;
-    const uint64_t k1 = 0x5500550055005500;
-    const uint64_t k2 = 0x3333000033330000;
-    const uint64_t k4 = 0x0f0f0f0f00000000;
-    t = k4 & (x ^ ((uint64_t) x << 28));
-    x ^= t ^ ((uint64_t) t >> 28);
-    t = k2 & (x ^ ((uint64_t) x << 14));
-    x ^= t ^ ((uint64_t) t >> 14);
-    t = k1 & (x ^ ((uint64_t) x << 7));
-    x ^= t ^ ((uint64_t) t >> 7);
-    return x;
-}
-
-uint64_t flipVertical(uint64_t x)
-{
-    return bswap_64(x);
-}
-
-uint64_t rotate90clockwise(uint64_t x)
-{
-    return flipVertical(flipDiagA1H8(x));
-}
-
 uint64_t placenew(uint64_t f)
 {
 
