@@ -7,7 +7,7 @@ echo ${JC}>/scratch/cluster/wwwutz.jobcnt
 for i in `seq -w 1 ${NUM}`; do
  JF=/scratch/cluster/wwwutz/job.stdout.$i
  mxq_submit --stdout=${JF} --group-id=sim2k-Randdir-${JC} --threads=1 --memory=20 --time=15 \
- /scratch/cluster/wwwutz/map2k -s 10 -i 10000 -S -Q -R ${i}0000
+ /scratch/cluster/wwwutz/map2k -s 11 -i 10000 -S -Q -R ${i}0000
 
 done
 #cd /scratch/cluster/wwwutz
