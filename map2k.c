@@ -213,14 +213,20 @@ void setupMAP()
 void pi2m(uint16_t x, char *tr)
 {
 
-    int y;
+    int y,t;
 
     for (y = 3; y >= 0; y--) {
         printf("%3d", x >> 4 * y & 0xf);
     }
     printf(" : ");
     for (y = 3; y >= 0; y--) {
-        printf("%6d", XSCORE[x >> 4 * y & 0xf]);
+       t = XSCORE[x >> 4 * y & 0xf];
+       if (t) {
+           printf("%6d", t);
+       }
+       else {
+          printf("     _");
+       }
     }
     printf("%s", tr);
 
@@ -2058,8 +2064,8 @@ void strat_backtracker4v3(struct F_st *F) // 3bo2 mit tiefe 4 prioscore nur bei 
 #define BT4DEPTH 6
     struct F_st *B;             // best pointer to R[...]
     struct F_st R[4][BT4DEPTH];        // alle results
-    uint64_t(*DIRFUNC[])(struct F_st * f, struct F_st * t) = {
-    &up, &right, &down, &left};
+    uint64_t(*DIRFUNC[])(struct F_st * f, struct F_st * t) = { &up, &right, &down, &left};
+    int c = 0; // multipurpose counter
     int i = 0;
     int j = 0;
     int k = 0;
@@ -2071,6 +2077,7 @@ void strat_backtracker4v3(struct F_st *F) // 3bo2 mit tiefe 4 prioscore nur bei 
     int T = BT4DEPTH - 1;      // maximale Tiefe
     int itercnt = 0;
     int BEST = -1;
+    int BESTscore[4];
     int GOOD = -1;
 
     for (i = 0; i <= 3; i++) {
@@ -2087,7 +2094,7 @@ void strat_backtracker4v3(struct F_st *F) // 3bo2 mit tiefe 4 prioscore nur bei 
 
 
     while (1) {
-        dprintf("-[%d]- go for %40s ###############\n", itercnt++, " ");
+        dprintf("-[%d]- go for %40s #\n", itercnt++, " ");
         if (DEBUG)
             dumpFs(F);
         GOOD = -1;
@@ -2095,6 +2102,7 @@ void strat_backtracker4v3(struct F_st *F) // 3bo2 mit tiefe 4 prioscore nur bei 
         
         // L1 
         for (i = 0; i <= 3; i++) {
+	    BESTscore[i] = 0;
             dprintf("%55s %5s\n", "L1", DIRS[i]);
             DIRFUNC[i] (F, &R[i][0]);
             if (DEBUG)
@@ -2103,11 +2111,14 @@ void strat_backtracker4v3(struct F_st *F) // 3bo2 mit tiefe 4 prioscore nur bei 
                 GOOD = i;       // einen gibts immer
                 psc[0] = R[i][0].basis ? R[i][0].basis * 10 + (T - 0) : 0;
                 sc = psc[0];
+                dprintf("%55s %5s (%d) score:%d hsc:%d\n","L1", DIRS[i], psc[0], sc , hsc);
+                if (sc > BESTscore[i]) {
+			BESTscore[i] = sc;
+		}
                 if (sc > hsc) {
                     hsc = sc;
                     BEST = i;   // der is aber besser
                 }
-                dprintf("%55s %5s (%d) score:%d hsc:%d\n","L1", DIRS[i], psc[0], sc , hsc);
                 
                 // L2
                 for (j = 0; j <= 3; j++) {
@@ -2116,12 +2127,15 @@ void strat_backtracker4v3(struct F_st *F) // 3bo2 mit tiefe 4 prioscore nur bei 
                     if (R[i][0].f != R[i][1].f) {       // actually moved
                         if (DEBUG)
                             dumpFs(&R[i][1]);
-                        psc[1] = R[i][0].basis ? R[i][0].basis * 10 + (T - 1) : 0;
-                        psc[2] = R[i][1].basis ? R[i][1].basis * 10 + (T - 2) : 0;
-                        sc = psc[0] + psc[1] + psc[2];
+                        psc[1] = R[i][1].basis ? R[i][1].basis * 10 + (T - 1) : 0;
+//                        psc[2] = R[i][1].basis ? R[i][1].basis * 10 + (T - 2) : 0;
+                        sc = psc[0] + psc[1];
 //                        dprintf("R[%d][0].basis*F0 + R[%d][1].basis*F1 (%d+%d+%d) = %d > %d (hsc)\n", i, i, psc[0], psc[1], psc[2], sc, hsc);
 //                        dprintf("R[%d][0].basis*F0 + R[%d][1].basis*F1 (%d+%d+%d) = %d > %d (hsc)\n", i, i, psc[0], psc[1], psc[2], sc, hsc);
-                        dprintf("%55s %5d %5d %5d score\n", "L2", psc[0],psc[1],psc[2]);
+                        dprintf("%55s %5s => %5s (%d+%d) score:%d hsc:%d\n", "L2", DIRS[i], DIRS[j], psc[0],psc[1],sc,hsc);
+                        if (sc > BESTscore[i]) {
+			  BESTscore[i] = sc;
+			}
                         if (sc > hsc) {
                             hsc = sc;
                             BEST = i;   // der is aber besser
@@ -2129,32 +2143,38 @@ void strat_backtracker4v3(struct F_st *F) // 3bo2 mit tiefe 4 prioscore nur bei 
                         
                         // L3
                         for (k = 0; k <= 3; k++) {
-                            // if (k==j) continue;
-                            dprintf("%55s => %5s => %5s\n", DIRS[i], DIRS[j], DIRS[k]);
+                            dprintf("%55s %5s => %5s => %5s\n", "L3", DIRS[i], DIRS[j], DIRS[k]);
                             DIRFUNC[k] (&R[i][1], &R[i][2]);
                             if (R[i][1].f != R[i][2].f) {       // actually moved
                                 if (DEBUG)
                                     dumpFs(&R[i][2]);
-                                psc[3] = R[i][3].basis ? R[i][3].basis * 10 + (T - 3) : 0;
-                                sc = psc[0] + psc[1] + psc[2] + psc[3];
+                                psc[2] = R[i][2].basis ? R[i][2].basis * 10 + (T - 2) : 0;
+                                sc = psc[0] + psc[1] + psc[2];
                                 // dprintf("R[%d][0].basis + R[%d][1].basis + R[i][2].basis (%d+%d+%d+%d) = %d > %d (hsc)\n", i, i, psc[0], psc[1], psc[2], psc[3], sc, hsc);
-                                dprintf("%55d %3d %3d %3d score\n", psc[0],psc[1],psc[2],psc[3]);
+                                dprintf("%55s %5s => %5s => %5s (%d+%d+%d) score:%d hsc:%d\n", "L3", DIRS[i], DIRS[j], DIRS[k], psc[0],psc[1],psc[2],sc,hsc);
+                                if (sc > BESTscore[i]) {
+				  BESTscore[i] = sc;
+				}
                                 if (sc > hsc) {
                                     hsc = sc;
                                     BEST = i;   // der is aber noch besser
-                                }
+				}
                                 
                                 // L4
                                 for (l = 0; l <= 3; l++) {
-                                    // if (l==k) continue;
-                                    dprintf("%55s %s %5s %s %5s %s %5s %s\n", DIRS[i], DIRC[i], DIRS[j], DIRC[j], DIRS[k], DIRC[k], DIRS[l], DIRC[l]);
+				    dprintf("%55s %5s => %5s => %5s => %5s\n", "L4", DIRS[i], DIRS[j], DIRS[k], DIRS[l]);
+//                                    dprintf("%55s %s %5s %s %5s %s %5s %s\n", DIRS[i], DIRC[i], DIRS[j], DIRC[j], DIRS[k], DIRC[k], DIRS[l], DIRC[l]);
                                     DIRFUNC[l] (&R[i][2], &R[i][3]);
                                     if (R[i][2].f != R[i][3].f) {       // actually moved
                                         if (DEBUG)
                                             dumpFs(&R[i][3]);
-                                        psc[4] = R[i][3].basis ? R[i][3].basis * 10 + (T - 4) : 0;
-                                        sc = psc[0] + psc[1] + psc[2] + psc[3] + psc[4];
-                                        dprintf("R[%d][0].basis + R[%d][1].basis + R[i][2].basis + R[i][3].basis (%d+%d+%d+%d+%d) = %d > %d (hsc)\n", i, i, psc[0], psc[1], psc[2], psc[3], psc[4], sc, hsc);
+                                        psc[3] = R[i][3].basis ? R[i][3].basis * 10 + (T - 3) : 0;
+                                        sc = psc[0] + psc[1] + psc[2] + psc[3];
+//                                        dprintf("R[%d][0].basis + R[%d][1].basis + R[i][2].basis + R[i][3].basis (%d+%d+%d+%d+%d) = %d > %d (hsc)\n", i, i, psc[0], psc[1], psc[2], psc[3], psc[4], sc, hsc);
+                                        dprintf("%55s %5s => %5s => %5s => %5s (%d+%d+%d+%d) score:%d hsc:%d\n", "L3", DIRS[i], DIRS[j], DIRS[k], DIRS[l], psc[0],psc[1],psc[2],psc[3],sc,hsc);
+                                        if (sc > BESTscore[i]) {
+						BESTscore[i] = sc;
+					}
                                         if (sc > hsc) {
                                             hsc = sc;
                                             BEST = i;   // der is aber noch viel besser
@@ -2162,15 +2182,19 @@ void strat_backtracker4v3(struct F_st *F) // 3bo2 mit tiefe 4 prioscore nur bei 
                                         
                                         // L5
                                         for (m = 0; m <= 3; m++) {
-                                            // if (l==k) continue;
-                                            dprintf("%55s %s %5s %s %5s %s %5s %s %5s %s\n", DIRS[i], DIRC[i], DIRS[j], DIRC[j], DIRS[k], DIRC[k], DIRS[l], DIRC[l], DIRS[m], DIRC[m]);
+                                            //dprintf("%55s %s %5s %s %5s %s %5s %s %5s %s\n", DIRS[i], DIRC[i], DIRS[j], DIRC[j], DIRS[k], DIRC[k], DIRS[l], DIRC[l], DIRS[m], DIRC[m]);
+				            dprintf("%55s %5s => %5s => %5s => %5s => %5s\n", "L5", DIRS[i], DIRS[j], DIRS[k], DIRS[l], DIRS[m]);
                                             DIRFUNC[m] (&R[i][3], &R[i][4]);
-                                            if (DEBUG)
-                                                dumpFs(&R[i][3]);
                                             if (R[i][3].f != R[i][4].f) {       // actually moved
-                                                psc[5] = R[i][4].basis ? R[i][4].basis * 10 + (T - 5) : 0;
-                                                sc = psc[0] + psc[1] + psc[2] + psc[3] + psc[4] + psc[5];
-                                                dprintf("R[%d][0].basis + R[%d][1].basis + R[i][2].basis + R[i][3].basis (%d+%d+%d+%d+%d+%d) = %d > %d (hsc)\n", i, i, psc[0], psc[1], psc[2], psc[3], psc[4], psc[5], sc, hsc);
+                                                if (DEBUG)
+                                                    dumpFs(&R[i][4]);
+                                                psc[4] = R[i][4].basis ? R[i][4].basis * 10 + (T - 4) : 0;
+                                                sc = psc[0] + psc[1] + psc[2] + psc[3] + psc[4];
+                                                //dprintf("R[%d][0].basis + R[%d][1].basis + R[i][2].basis + R[i][3].basis (%d+%d+%d+%d+%d+%d) = %d > %d (hsc)\n", i, i, psc[0], psc[1], psc[2], psc[3], psc[4], psc[5], sc, hsc);
+                                                dprintf("%55s %5s => %5s => %5s => %5s => %5s (%d+%d+%d+%d+%d) score:%d hsc:%d\n", "L5", DIRS[i], DIRS[j], DIRS[k], DIRS[l], DIRS[m], psc[0],psc[1],psc[2],psc[3],psc[4],sc,hsc);
+                                                if (sc > BESTscore[i]) {
+						  BESTscore[i] = sc;
+						}
                                                 if (sc > hsc) {
                                                     hsc = sc;
                                                     BEST = i;   // der is aber noch viel viel besser
@@ -2188,18 +2212,37 @@ void strat_backtracker4v3(struct F_st *F) // 3bo2 mit tiefe 4 prioscore nur bei 
 
             }
         }
+	
+
         // dprintf("tracked. GOOD=%d BEST=%d\n",GOOD,BEST);
         if (GOOD >= 0) {
             if (BEST < 0) {     // ok ok kompromiss
                 BEST = GOOD;
             }
+	    
+	    for (c=0;c<=3;c++) {
+	        if (BEST !=c && hsc == BESTscore[c]) {
+                    dprintf ("XXX found [%s] as good as [%s] XXX\n",DIRS[BEST],DIRS[c]);
+                    	    
+	        }
+	    }
+	    dprintf("\n");
+	    
 
-            B = &R[BEST][0];
             if (DEBUG || OPT_PLAY) {
-                printf("### best move is %s %s scoring %d ####\n", DIRC[BEST], DIRS[BEST], hsc);
+                printf("### best move is %s %s scoring %d ### ", DIRC[BEST], DIRS[BEST], hsc);
+		for (c=0;c<=3;c++) {
+		  printf(" %s=%d ",DIRS[c],BESTscore[c]);
+		}
+		printf("\n");
+		
+		
                 dumpFs(F);
                 dumpFs(B);
             }
+
+            B = &R[BEST][0];
+
             F->f = placenew(B->f);
             F->score += R[BEST][0].score;
             F->basis += R[BEST][0].basis;
@@ -2247,7 +2290,7 @@ int main(int argc, char **argv)
     &strat_hiscorer, &strat_dlhiscorer, &strat_dl2hiscorer,
     &strat_backtracker, &strat_backtracker2,
     &strat_backtracker3, &strat_backtracker3b, &strat_backtracker3bo, &strat_backtracker3bo2,
-    &strat_backtracker4, &strat_backtracker4v2,  &strat_backtracker4v3,
+    &strat_backtracker4, &strat_backtracker4v2,  &strat_backtracker4v3
     
     };
 
