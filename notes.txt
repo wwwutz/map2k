@@ -1,3 +1,20 @@
+GRAVITY
+
+wenn 2 richtungen gleichen score ergeben, dann nimm die mit den hoechsten
+ werten auf ihrer haelfte.
+ 
+ 0123
+ 4567
+ 89ab
+ cdef
+ 
+ UP : sum( 0-7 )
+ DN : sum( 8-f )
+ LF : sum( 01,45,89,cd )
+ RT : sum( 23,67,ab,ef )
+ 
+ gravity mappen ?
+
 BACKTRACKERWERTIGKEIT
 
  tiefe T=2
