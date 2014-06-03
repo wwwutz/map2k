@@ -61,7 +61,6 @@ struct F_st {
     uint64_t f;                 // the bitfield
     int score;                  // the score
     int basis;                  // the 2**score
-    unsigned char dir;          // the direction which made me
     unsigned int moves;         // the number of moves to get here
 };
 
@@ -75,7 +74,6 @@ void init_F(struct F_st *F)
     F->f = 0x0;
     F->score = 0;
     F->basis = 0;
-    F->dir = 0;
     F->moves = 0;
 }
 
@@ -84,7 +82,6 @@ void copy_F(struct F_st *F, struct F_st *T)
     T->f = F->f;
     T->score = F->score;
     T->basis = F->basis;
-    T->dir = F->dir;
     T->moves = F->moves;
 }
 
@@ -380,7 +377,6 @@ uint64_t shift_Ls(struct F_st * fs, struct F_st * ts)
 {
     if (DEBUG)
         printf("shift_L(%016lx) = ", fs->f);
-    ts->dir = DIR_LEFT;
     return shift_LRs(fs, ts, MAP_L);
 }
 
@@ -388,7 +384,6 @@ uint64_t shift_Rs(struct F_st * fs, struct F_st * ts)
 {
     if (DEBUG)
         printf("shift_R(%016lx) = ", fs->f);
-    ts->dir = DIR_RIGHT;
     return shift_LRs(fs, ts, MAP_R);
 }
 
@@ -557,7 +552,6 @@ uint64_t shift_Ds(struct F_st * fs, struct F_st * ts)
 {
     if (DEBUG)
         printf("shift_D(%016lx) = ", fs->f);
-    ts->dir = DIR_DOWN;
     return shift_UDs(fs, ts, MAP_L);
 }
 
@@ -565,7 +559,6 @@ uint64_t shift_Us(struct F_st * fs, struct F_st * ts)
 {
     if (DEBUG)
         printf("shift_U(%016lx) = ", fs->f);
-    ts->dir = DIR_UP;
     return shift_UDs(fs, ts, MAP_R);
 }
 
@@ -706,6 +699,8 @@ void strat_hiscorer(struct F_st *F)
     int hsc = 0;
     int moved = 0;
     int score = 0;
+    int dir = 0;
+    int fdir = 0;
 
     int try = 0;
 
@@ -727,10 +722,13 @@ void strat_hiscorer(struct F_st *F)
         moved = 0;
         mv = 0;
         hsc = 0;
+        
 
-        T = &R[DIR_UP];
+        dir = DIR_UP;
+        fdir = dir;
+        
+        T = &R[dir];
         T->f = F->f;
-        T->dir = 0;
         if (DEBUG) {
             printf("--- go for ---\n");
             dumpFs(T);
@@ -741,9 +739,11 @@ void strat_hiscorer(struct F_st *F)
             B = T;
             moved++;
             mv++;
+            fdir = dir;
         }
 
-        T = &R[DIR_RIGHT];
+        dir = DIR_RIGHT;
+        T = &R[dir];
         right(F, T);
         if (F->f != T->f) {
             if (T->score >= hsc) {
@@ -751,10 +751,12 @@ void strat_hiscorer(struct F_st *F)
                 B = T;
                 moved++;
             }
+            fdir = dir;
             mv++;
         }
 
-        T = &R[DIR_LEFT];
+        dir = DIR_LEFT;
+        T = &R[dir];
         left(F, T);
         if (F->f != T->f) {
             if (T->score >= hsc) {
@@ -762,10 +764,12 @@ void strat_hiscorer(struct F_st *F)
                 B = T;
                 moved++;
             }
+            fdir = dir;
             mv++;
         }
 
-        T = &R[DIR_DOWN];
+        dir = DIR_DOWN;
+        T = &R[dir];
         down(F, T);
         if (F->f != T->f) {
             if (T->score >= hsc) {
@@ -773,13 +777,14 @@ void strat_hiscorer(struct F_st *F)
                 B = T;
                 moved++;
             }
+            fdir = dir;
             mv++;
         }
 
         if (mv) {
             score += hsc;
             if (DEBUG)
-                printf("shifted %s\n", DIRS[B->dir]);
+                printf("shifted %s\n", DIRS[fdir]);
             if (DEBUG)
                 dumpFs(B);
             F->f = placenew(B->f);
@@ -825,7 +830,7 @@ void strat_dlhiscorer(struct F_st *F)
     int hsc = 0;
     int moved = 0;
     int SCORE = F->score;
-
+    int fdir = 0;
     int try = 0;
 
 //    init_F(&F);
@@ -868,6 +873,7 @@ void strat_dlhiscorer(struct F_st *F)
                     j = i;
                     moved++;
                 }
+                fdir = i;
                 mv++;
             }
 
@@ -878,7 +884,7 @@ void strat_dlhiscorer(struct F_st *F)
         if (mv) {
             SCORE += B->score;
             if (DEBUG)
-                printf("shifted %s\n", DIRS[B->dir]);
+                printf("shifted %s\n", DIRS[fdir]);
             if (DEBUG)
                 dumpFs(B);
             F->f = placenew(B->f);
@@ -926,6 +932,7 @@ void strat_dl2hiscorer(struct F_st *F)
     int SCORE = 0;
     int stratidx = 0;
     int try = 0;
+    int fdir = 0;
 
 //    init_F(&F);
     for (i = 0; i <= 3; i++) {
@@ -967,6 +974,7 @@ void strat_dl2hiscorer(struct F_st *F)
                     decision = DEC_SCORE;
                     stratidx = 0;       // stratidx resetten
                 }
+                fdir = ii;
                 mv++;
             }
         }
@@ -983,13 +991,14 @@ void strat_dl2hiscorer(struct F_st *F)
             }
         }
         dprintf("\n %s decided \t\t\t%5s ", DECISION[decision], DIRS[j]);
+        fdir = j;
         if (decision == DEC_STRAT) {
             dprintf(" next STRAT[%d]=%s", stratidx, DIRS[STRAT[stratidx]]);
         }
         dprintf("\n");
         if (mv) {
             SCORE += B->score;
-            dprintf("shifted %s\n", DIRS[B->dir]);
+            dprintf("shifted %s\n", DIRS[fdir]);
             if (DEBUG)
                 dumpFs(B);
             F->f = placenew(B->f);
