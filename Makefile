@@ -14,6 +14,7 @@ test:
 	for i in `seq -w 0 11`; do diff -q test/strat-$${i}.{ref,tst} ;done
 	
 
-test-ref: 
+test-ref:
+	[ -d test ] || mkdir test
 	for i in `seq -w 0 11`; do ./map2k -r 1 -s $${i} -S $${i} > test/strat-$${i}.ref ;done
 	
