@@ -1,4 +1,6 @@
 gnuplot -p -e "plot \
+'stats.backtracker4v4' u 1 with lines, \
+'stats.backtracker4v3' u 1 with lines, \
 'stats.backtracker4v2' u 1 with lines, \
 'stats.backtracker4' u 1 with lines, \
 'stats.backtracker3bo2' u 1 with lines, \

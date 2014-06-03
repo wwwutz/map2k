@@ -10,11 +10,11 @@ nice:
 
 .PHONY: test
 test:
-	for i in `seq -w 0 11`; do ./map2k -r 1 -s $${i} -S $$i > test/strat-$${i}.tst ;done
-	for i in `seq -w 0 11`; do diff -q test/strat-$${i}.{ref,tst} ;done
+	for i in `seq -w 0 12`; do ./map2k -r 1 -s $${i} -S $$i > test/strat-$${i}.tst ;done
+	for i in `seq -w 0 12`; do diff -q test/strat-$${i}.{ref,tst} ;done
 	
 
 test-ref:
 	[ -d test ] || mkdir test
-	for i in `seq -w 0 11`; do ./map2k -r 1 -s $${i} -S $${i} > test/strat-$${i}.ref ;done
+	for i in `seq -w 0 12`; do ./map2k -r 1 -s $${i} -S $${i} > test/strat-$${i}.ref ;done
 	
