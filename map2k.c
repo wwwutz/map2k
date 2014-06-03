@@ -2327,7 +2327,7 @@ int main(int argc, char **argv)
             fprintf(stderr, " -R <num>    startvalue iterating random seed\n");
             fprintf(stderr, " -Q          quiet\n");
             fprintf(stderr, " -b          output b instead of 2^b\n");
-            fprintf(stderr, " -r <num>    seed to feed\n");
+            fprintf(stderr, " -r <num>    seed to feed (default 1)\n");
             fprintf(stderr, " -u          seed from /dev/urandom\n");
             fprintf(stderr, " -i <num>    num iterations\n");
             fprintf(stderr, " -s <idx>    strategy to follow\n");
