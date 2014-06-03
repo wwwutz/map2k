@@ -1,12 +1,34 @@
 GRAVITY
 
+wegen weil:
+
+ L3    up =>  left =>    up (45+24+33) score:102 hsc:102
+ L3    up =>  left =>  down (45+24+33) score:102 hsc:102
+ L3  down =>  left =>    up (45+24+33) score:102 hsc:102
+ L3  down =>  left =>  down (45+24+33) score:102 hsc:102
+
+XXX found [up] as good as [down] XXX
+
+### best move is ^^ up scoring 102 ###  up=102  right=0  down=102  left=97
+  0  0  0  1 :      _     _     _     2
+  0  0  0  0 :      _     _     _     _
+  0  0  1  3 :      _     _     2     8
+  0  0  2  3 :      _     _     4     8
+Score: 24 / 10
+
+[up] und [down] geben zwar gleichen score, aber in dem fall ist es schlauer
+ zu clustern, also eher runter zu den anderen. eben da wo mehr sind.
+
+ --->
 wenn 2 richtungen gleichen score ergeben, dann nimm die mit den hoechsten
  werten auf ihrer haelfte.
  
- 0123
- 4567
- 89ab
- cdef
+ 
+ 
+ 0 1 2 3
+ 4 5 6 7
+ 8 9 a b
+ c d e f
  
  UP : sum( 0-7 )
  DN : sum( 8-f )
@@ -14,7 +36,26 @@ wenn 2 richtungen gleichen score ergeben, dann nimm die mit den hoechsten
  RT : sum( 23,67,ab,ef )
  
  gravity mappen ?
+ 
+ richtung = gravity(uint64_t f)
 
+ oder
+ 
+ int dir_weight[4]; [UP,RT,DN,LF];
+ weight( uint64_t f, &dir_weight )
+   - was wenn UL = DR ( abef = 0x1111 )
+   -- maximal 2 ergebnisse, L,R,U,D,LU,LD,RU,RD
+   -- dennoch koennen die summen interessant sein, wenn auch ein einsamer 2048er
+      auf 0 und lauter 2'n auf ( 8-f ) ne lustige konstellation sind.
+ 
+ oder
+ 
+ MAP_WEIGHT[0xFFFF]; wie score, wird bei UD/LR mitberechnet und in die f_st eingetragen
+   - nett, dummerweise brauche ich die nur wenn der score gleich ist. das is weitaus seltener also overhead.
+ 
+ maximalgewicht = haelfte feld = 8x 2**14
+ 
+ 
 BACKTRACKERWERTIGKEIT
 
  tiefe T=2
