@@ -2791,14 +2791,16 @@ int main(int argc, char **argv)
         default:               /* '?' */
             fprintf(stderr, "Usage: %s [options]\n", argv[0]);
             fprintf(stderr, "Options:\n");
-            fprintf(stderr, " -S          statistics\n");
-            fprintf(stderr, " -R <num>    startvalue iterating random seed\n");
-            fprintf(stderr, " -Q          quiet\n");
-            fprintf(stderr, " -b          output b instead of 2^b\n");
-            fprintf(stderr, " -r <num>    seed to feed (default 1)\n");
-            fprintf(stderr, " -u          seed from /dev/urandom\n");
-            fprintf(stderr, " -i <num>    num iterations\n");
             fprintf(stderr, " -s <idx>    strategy to follow\n");
+            fprintf(stderr, " -i <num>    num iterations\n");
+            fprintf(stderr, " -S          statistics\n");
+            fprintf(stderr, " -Q          quiet (for benchmarking use)\n");
+            fprintf(stderr, " -u          seed from /dev/urandom\n");
+            fprintf(stderr, " -r <num>    seed to feed (default 1)\n");
+            fprintf(stderr, " -R <num>    startvalue incremental random seed\n");
+            fprintf(stderr, " -b          output b instead of 2^b\n");
+            fprintf(stderr, " -p          play single stepping all moves\n");
+            
             for (i = 0; i < sizeof(STRATEGYFUNC) / sizeof(STRATEGYFUNC[0]); i++) {
                 fprintf(stderr, "     %d: %-s\n", i, STRATEGYNAME[i]);
             }
@@ -2904,8 +2906,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "moves: %6d | %6d | %6d \n", LOWstats.f.moves, AVGmoves, TOPstats.f.moves);
         if (OPT_RITER)
             fprintf(stderr, "seed: %6d |        | %6d \n", LOWstats.rseed, TOPstats.rseed);
-        dumpFs(&LOWstats.f);
-        dumpFs(&TOPstats.f);
+        dumpFs(&LOWstats.f); // spam on STDOUT
+        dumpFs(&TOPstats.f); // dito
     }
 
     exit(0);
