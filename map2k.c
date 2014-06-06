@@ -2310,7 +2310,7 @@ int count(uint64_t F, uint8_t *G )
 int weightcount(uint64_t F, uint8_t *W, uint8_t *C )
 {
     int idx_ud[] = { 2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0 };
-    int idx_lr[] = { 3,3,1,1,3,3,1,1,3,3,1,1,3,3,1,1 };
+    int idx_lr[] = { 1,1,3,3,1,1,3,3,1,1,3,3,1,1,3,3 };
     int DEBUG = OPT_DEBUG;
 
     int c = 0;
