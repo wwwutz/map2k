@@ -1,3 +1,22 @@
+
+
+/*
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+                    Version 2, December 2004
+ 
+ Copyright (C) 2004 Sam Hocevar
+  14 rue de Plaisance, 75014 Paris, France
+ Everyone is permitted to copy and distribute verbatim or modified
+ copies of this license document, and changing it is allowed as long
+ as the name is changed.
+ 
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+ 
+  0. You just DO WHAT THE FUCK YOU WANT TO.
+*/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
@@ -3717,15 +3736,3 @@ int main(int argc, char **argv)
     exit(0);
 }
 
-/*
-
-# -r 84577 :  score 520/67
-# 
-# ./map2k -s 5 -i 1 -S -Q -r 14246984 : 208/42
-
-# https://chessprogramming.wikispaces.com/Flipping+Mirroring+and+Rotating
-
-# cp /home/wwwutz/2048/map2k /scratch/cluster/wwwutz/; for i in `seq -w 1 1500`; do mxq_submit --stdout=/scratch/cluster/wwwutz/job.stdout.$i  --threads=1 --memory=20 --time=5 /scratch/cluster/wwwutz/map2k; done
-# sort -n  job.stdout* > /home/wwwutz/2048/stats.highscorer
-
-*/
