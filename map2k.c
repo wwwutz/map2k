@@ -76,6 +76,14 @@ uint8_t ROTMAP[4][16] = {
     {3, 7, 11, 15, 2, 6, 10, 14, 1, 5, 9, 13, 0, 4, 8, 12},
 };
 
+
+struct Strat_st = {
+   char *func;
+   char *name;
+   char *desc;
+    
+};
+
 struct F_st {
     uint64_t f;                 // the bitfield
     int score;                  // the score
@@ -2310,7 +2318,9 @@ int count(uint64_t F, uint8_t *G )
 int weightcount(uint64_t F, uint8_t *W, uint8_t *C )
 {
     int idx_ud[] = { 2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0 };
+//    int idx_ud[] = { 0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,2 };
     int idx_lr[] = { 1,1,3,3,1,1,3,3,1,1,3,3,1,1,3,3 };
+//    int idx_lr[] = { 3,3,1,1,3,3,1,1,3,3,1,1,3,3,1,1 };
     int DEBUG = OPT_DEBUG;
 
     int c = 0;
@@ -2545,8 +2555,8 @@ void strat_backtracker4v4(struct F_st *F)       // 3bo2 mit tiefe 4 prioscore nu
     }
     return;
 }
-// ZONK 9kl = 6290
-void strat_backtracker4v5(struct F_st *F)       // 4v4 jetzt mal mit -L (aus bt5)
+
+void strat_backtracker4v5(struct F_st *F)       // 4v4 jetzt mal mit -L (aus bt5) // ZONK 9kl = 6290
 {
     /* 
      * 0+0+11+4 ist schlechter als 11+4+0+0
