@@ -3675,6 +3675,7 @@ int main(int argc, char **argv)
     unsigned int AVGscore = 0;
     unsigned int AVGmoves = 0;
     unsigned int TOTmoves = 0;
+    unsigned int SCORE_9k = 0;
 
     int riter = OPT_RITER;
 
@@ -3726,6 +3727,9 @@ int main(int argc, char **argv)
             copy_F(&TEMP, &LOWstats.f);
             LOWstats.rseed = riter;
         }
+        if (TEMP.score > 9000) {
+            SCORE_9k++;
+        }
         AVGscore += TEMP.score;
         TOTmoves += TEMP.moves;
         riter++;
@@ -3738,9 +3742,11 @@ int main(int argc, char **argv)
         AVGscore = AVGscore / OPT_ITER;
         AVGmoves = TOTmoves / OPT_ITER;
         float telapsed = (tend - tstart) / (float) CLOCKS_PER_SEC;
-        fprintf(stderr, "Stats out of %d iterations in %4.2fs (%.0f/s). %d moves done (%5.0f/s)\n", OPT_ITER, telapsed, ((float) OPT_ITER / (float) telapsed), TOTmoves, (float) TOTmoves / (float) telapsed);
-        fprintf(stderr, " %'d moves done (%5.0f/s)\n", TOTmoves, (float) TOTmoves / (float) telapsed);
-        fprintf(stderr, " %'ld tries done (%5.0f/s)\n", TOTALTRIES, (float) TOTALTRIES / (float) telapsed);
+        fprintf(stderr, "Stats for strategy #%d \"%s\"\n", OPT_STRT,strats[OPT_STRT].name);
+        fprintf(stderr, " %9d iterations in %4.2fs (%.0f/s)\n", OPT_ITER, telapsed, ((float) OPT_ITER / (float) telapsed) );
+        fprintf(stderr, " %8.1f%% break 9k barrier (%d/%d)\n", (float) 100*(((float)SCORE_9k/OPT_ITER)),SCORE_9k,OPT_ITER);
+        fprintf(stderr, " %9d moves done (%8.0f/s)\n", TOTmoves, (float) TOTmoves / (float) telapsed);
+        fprintf(stderr, " %9ld tries done (%8.0f/s)\n", TOTALTRIES, (float) TOTALTRIES / (float) telapsed);
         fprintf(stderr, "       %6s | %6s | %6s\n", "LOW", "AVG", "TOP");
         fprintf(stderr, "score: %6d | %6d | %6d \n", LOWstats.f.score, AVGscore, TOPstats.f.score);
         fprintf(stderr, "moves: %6d | %6d | %6d \n", LOWstats.f.moves, AVGmoves, TOPstats.f.moves);

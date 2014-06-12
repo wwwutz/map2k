@@ -23,3 +23,8 @@ test-ref:
 .PHONY: stats
 stats:
 	for i in `seq -w 0 ${MAXS}`; do perl -lane '($$F[0] <= 9000) and  $$m++;$$n++; END{printf "$$m/$$n : %4.1f\%\n",100-(100/$$n*$$m)}' test/strat-$${i}.ref ;done
+
+clean:
+	rm map2k map2k.o
+
+# -Wall -Werror -Wextra -pedantic 
