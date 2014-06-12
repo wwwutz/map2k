@@ -77,12 +77,6 @@ uint8_t ROTMAP[4][16] = {
 };
 
 
-struct Strat_st = {
-   char *func;
-   char *name;
-   char *desc;
-    
-};
 
 struct F_st {
     uint64_t f;                 // the bitfield
@@ -90,6 +84,13 @@ struct F_st {
     int basis;                  // the 2**score
     unsigned int moves;         // the number of moves to get here
 };
+
+struct Strat_st {
+   void (*func) (struct F_st *);
+   const char *name;
+   const char *desc;
+};
+#define STRATDEFINE( NAME, DESC ) { &strat_ ## NAME, #NAME , DESC }
 
 struct Stats_st {
     struct F_st f;              // the field
@@ -714,6 +715,7 @@ void test_shifting()
 
 void strat_hiscorer(struct F_st *F)
 {
+    
     int DEBUG = OPT_DEBUG;
 //    struct F_st F;              // from
     struct F_st *T;             // to
@@ -3562,18 +3564,24 @@ int main(int argc, char **argv)
     int OPT_STAT;
     int OPT_QUIET;
 
-    void (*STRATEGYFUNC[]) (struct F_st *) = {
-    &strat_hiscorer, &strat_dlhiscorer, &strat_dl2hiscorer,
-    &strat_backtracker, &strat_backtracker2, &strat_backtracker3,
-    &strat_backtracker3b, &strat_backtracker3bo, &strat_backtracker3bo2,
-    &strat_backtracker4, &strat_backtracker4v2, &strat_backtracker4v3, &strat_backtracker4v4, &strat_backtracker4v5,
-    &strat_backtracker5, &strat_backtracker5v2, &strat_backtracker4v6 };
-
-    static char *STRATEGYNAME[] = {
-        "hiscorer", "dlhiscorer", "dl2hiscorer",
-        "bt depth 1", "bt depth 2",
-        "bt depth 3", "base bt 3", "base bt3 ordered", "base bt3 ord v2",
-        "base bt4", "base bt4 v2", "base bt4 v3", "base bt4 v4", "base bt4 v5", "base bt5", "base bt5 v2", "base bt4 v6"
+    struct Strat_st strats[] = {
+        STRATDEFINE(hiscorer,       "Schiebe immer in die Richtung, in der es den hoechsten Score gibt."),
+        STRATDEFINE(dlhiscorer,     "hiscorer, ansonsten DLDLDLRU"),
+        STRATDEFINE(dl2hiscorer,    "hiscorer, ansonsten DLDRDLDRU"),
+        STRATDEFINE(backtracker,    "Backtracking depth 1"),
+        STRATDEFINE(backtracker2,   "BT d2"),
+        STRATDEFINE(backtracker3,   "BT d3 based on score"),
+        STRATDEFINE(backtracker3b,  "BT d3 based on basis"),
+        STRATDEFINE(backtracker3bo, "BT d3 b score ordered"),
+        STRATDEFINE(backtracker3bo2,"BT d3 b sco incl. first"),
+        STRATDEFINE(backtracker4,   "BT d4"),
+        STRATDEFINE(backtracker4v2, "BT d4 prio sco > 0"),
+        STRATDEFINE(backtracker4v3, "BT d4 ps ?"),
+        STRATDEFINE(backtracker4v4, "BT d4 ps + weight"),
+        STRATDEFINE(backtracker4v5, "BT d4 psw -level"),
+        STRATDEFINE(backtracker5,   "BT d5 psw"),
+        STRATDEFINE(backtracker5v2, "BT d5 psw -level"),
+        STRATDEFINE(backtracker4v6, "testing"),
     };
 
     int i = 0;
@@ -3624,7 +3632,6 @@ int main(int argc, char **argv)
         default:               /* '?' */
             fprintf(stderr, "Usage: %s [options]\n", argv[0]);
             fprintf(stderr, "Options:\n");
-            fprintf(stderr, " -s <idx>    strategy to follow\n");
             fprintf(stderr, " -i <num>    num iterations\n");
             fprintf(stderr, " -S          statistics\n");
             fprintf(stderr, " -Q          quiet (for benchmarking use)\n");
@@ -3633,9 +3640,9 @@ int main(int argc, char **argv)
             fprintf(stderr, " -R <num>    startvalue incremental random seed\n");
             fprintf(stderr, " -b          output b instead of 2^b\n");
             fprintf(stderr, " -p          play single stepping all moves\n");
-            
-            for (i = 0; i < sizeof(STRATEGYFUNC) / sizeof(STRATEGYFUNC[0]); i++) {
-                fprintf(stderr, "     %d: %-s\n", i, STRATEGYNAME[i]);
+            fprintf(stderr, " -s <idx>    strategy to follow\n");
+            for (i = 0; i < sizeof(strats) / sizeof(strats[0]); i++) {
+            fprintf(stderr, "     %2d:     %-s\n", i, strats[i].name);
             }
             fprintf(stderr, "\n");
             exit(EXIT_FAILURE);
@@ -3643,7 +3650,7 @@ int main(int argc, char **argv)
         // fprintf(stderr,"optind=%d;\n",optind);
     }
 
-    fprintf(stderr, "lets follow strategy #%d \"%s\"\n", OPT_STRT, STRATEGYNAME[OPT_STRT]);
+    fprintf(stderr, "lets follow strategy #%d \"%s\" (%s)\n", OPT_STRT, strats[OPT_STRT].name,strats[OPT_STRT].desc);
 
 //printf("name argument = %s\n", argv[optind]);
 
@@ -3696,7 +3703,7 @@ int main(int argc, char **argv)
 
         //
 //printf("XXX %d XXX\n",i);
-        STRATEGYFUNC[OPT_STRT] (&TEMP);
+        strats[OPT_STRT].func (&TEMP);
 //printf("XXX %d XXX\n",i);
         //
         //
