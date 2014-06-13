@@ -16,15 +16,16 @@ STRAT=${ARG:=${LAST}}
 NAME=${MAP2K_STRATS_NAME[${STRAT}]}
 
 
-rm ${CLUSTERDISK}/job.stdout.[0-9]*
+rm ${CLUSTERDISK}/job.std{out,err}.[0-9]*
 JC=$((1+`cat ${GROUPCOUNTER}`))
 echo ${JC}>${GROUPCOUNTER}
 
 GROUPID=${NAME}-${JC}
 for i in `seq -w 1 ${NUM}`; do
- JF=${CLUSTERDISK}/job.stdout.$i
- mxq_submit --stdout=${JF} --group-id=${GROUPID} --threads=1 --memory=20 --time=15 \
- ${CLUSTERDISK}/map2k -s ${STRAT} -i 10000 -S -Q -R ${i}0000
+ JF=${CLUSTERDISK}/job.stdout.$i 
+ JE=${CLUSTERDISK}/job.stderr.$i
+ mxq_submit --stderr=${JE} --stdout=${JF} --group-id=${GROUPID} --threads=1 --memory=20 --time=15 \
+ ${CLUSTERDISK}/map2k -s ${STRAT} -i 10000 -S -R ${i}0000
 done
 
 echo "waiting for ${NUM} jobs in group \"${GROUPID}\" to finish"
