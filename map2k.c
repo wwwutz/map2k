@@ -311,6 +311,37 @@ void dumpFs(struct F_st *fs)
     printf("Score: %d / %d\n", fs->score, fs->basis);
 }
 
+void fpi2m(FILE *out, uint16_t x, char *tr)
+{
+
+    int y, t;
+
+    for (y = 3; y >= 0; y--) {
+        fprintf(out, "%3d", x >> 4 * y & 0xf);
+    }
+    fprintf(out," : ");
+    for (y = 3; y >= 0; y--) {
+        t = XSCORE[x >> 4 * y & 0xf];
+        if (t) {
+            fprintf(out,"%6d", t);
+        } else {
+            fprintf(out,"     _");
+        }
+    }
+    fprintf(out,"%s", tr);
+
+}
+
+void fdumpFs(FILE *out, struct F_st *fs)
+{
+    dprintf("dumpFs()   f: %016lx\n", fs->f);
+    fpi2m(out,(fs->f & 0xffff000000000000) >> 12 * 4, "\n");
+    fpi2m(out,(fs->f & 0x0000ffff00000000) >> 8 * 4, "\n");
+    fpi2m(out,(fs->f & 0x00000000ffff0000) >> 4 * 4, "\n");
+    fpi2m(out,(fs->f & 0x000000000000ffff), "\n");
+    fprintf(out,"Score: %d / %d\n", fs->score, fs->basis);
+}
+
 void dumpCFs(struct F_st *fs)
 {
     dprintf("dumpFs()   f: %016lx\n", fs->f);
@@ -3765,8 +3796,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "moves: %6d | %6d | %6d \n", LOWstats.f.moves, AVGmoves, TOPstats.f.moves);
         if (OPT_RITER)
             fprintf(stderr, "seed: %6d |        | %6d \n", LOWstats.rseed, TOPstats.rseed);
-        dumpFs(&LOWstats.f); // spam on STDOUT
-        dumpFs(&TOPstats.f); // dito
+        fdumpFs(stderr,&LOWstats.f); // spam on STDOUT
+        fdumpFs(stderr,&TOPstats.f); // dito
     }
 
     exit(0);
