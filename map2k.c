@@ -3563,6 +3563,7 @@ int main(int argc, char **argv)
     int OPT_STRT;
     int OPT_STAT;
     int OPT_QUIET;
+    int OPT_BATCH;
 
     struct Strat_st strats[] = {
         STRATDEFINE(hiscorer,       "Schiebe immer in die Richtung, in der es den hoechsten Score gibt."),
@@ -3583,6 +3584,7 @@ int main(int argc, char **argv)
         STRATDEFINE(backtracker5v2, "BT d5 psw -level"),
         STRATDEFINE(backtracker4v6, "testing"),
     };
+    int num_strats = sizeof(strats) / sizeof(strats[0]);
 
     int i = 0;
 
@@ -3594,9 +3596,10 @@ int main(int argc, char **argv)
     OPT_STAT = 0;
     OPT_QUIET = 0;
     OPT_RITER = 0;
+    OPT_BATCH = 0;
     OPT_DEBUG = 0;              // static !
 
-    while ((opt = getopt(argc, argv, "dbur:s:R:SQpi:")) != -1) {
+    while ((opt = getopt(argc, argv, "Bdbur:s:R:SQpi:")) != -1) {
         switch (opt) {
         case 'b':
             OPT_BASE = 1;
@@ -3626,6 +3629,9 @@ int main(int argc, char **argv)
         case 'Q':
             OPT_QUIET = 1;
             break;
+        case 'B':
+            OPT_BATCH = 1;
+            break;
         case 'i':
             OPT_ITER = atoi(optarg);
             break;
@@ -3640,8 +3646,9 @@ int main(int argc, char **argv)
             fprintf(stderr, " -R <num>    startvalue incremental random seed\n");
             fprintf(stderr, " -b          output b instead of 2^b\n");
             fprintf(stderr, " -p          play single stepping all moves\n");
+            fprintf(stderr, " -B          export internals for batch processing and exit\n");
             fprintf(stderr, " -s <idx>    strategy to follow\n");
-            for (i = 0; i < sizeof(strats) / sizeof(strats[0]); i++) {
+            for (i = 0; i < num_strats; i++) {
             fprintf(stderr, "     %2d:     %-s\n", i, strats[i].name);
             }
             fprintf(stderr, "\n");
@@ -3649,10 +3656,16 @@ int main(int argc, char **argv)
         }
         // fprintf(stderr,"optind=%d;\n",optind);
     }
+    if (OPT_BATCH) {
+        printf("MAP2K_NUM_STRATS=%d\n",num_strats);
+        for (i = 0; i < num_strats; i++) {
+            printf("MAP2K_STRATS_NAME[%d]=\"%s\"\n",i,strats[i].name);
+            printf("MAP2K_STRATS_DESC[%d]=\"%s\"\n",i,strats[i].desc);
+        }
+        exit(0);
+    }
 
     fprintf(stderr, "lets follow strategy #%d \"%s\" (%s)\n", OPT_STRT, strats[OPT_STRT].name,strats[OPT_STRT].desc);
-
-//printf("name argument = %s\n", argv[optind]);
 
     if (!OPT_RITER) {
         if (OPT_URND) {
@@ -3744,7 +3757,7 @@ int main(int argc, char **argv)
         float telapsed = (tend - tstart) / (float) CLOCKS_PER_SEC;
         fprintf(stderr, "Stats for strategy #%d \"%s\"\n", OPT_STRT,strats[OPT_STRT].name);
         fprintf(stderr, " %9d iterations in %4.2fs (%.0f/s)\n", OPT_ITER, telapsed, ((float) OPT_ITER / (float) telapsed) );
-        fprintf(stderr, " %8.1f%% break 9k barrier (%d/%d)\n", (float) 100*(((float)SCORE_9k/OPT_ITER)),SCORE_9k,OPT_ITER);
+        fprintf(stderr, " %8.1f%% break 9k barrier ( %d / %d )\n", (float) 100*(((float)SCORE_9k/OPT_ITER)),SCORE_9k,OPT_ITER);
         fprintf(stderr, " %9d moves done (%8.0f/s)\n", TOTmoves, (float) TOTmoves / (float) telapsed);
         fprintf(stderr, " %9ld tries done (%8.0f/s)\n", TOTALTRIES, (float) TOTALTRIES / (float) telapsed);
         fprintf(stderr, "       %6s | %6s | %6s\n", "LOW", "AVG", "TOP");
